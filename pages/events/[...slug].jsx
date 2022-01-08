@@ -1,32 +1,14 @@
-import { useRouter } from "next/router";
 import { Fragment } from "react";
 
-import { getFilteredEvents } from "../../dummy-data";
-import EventList from "../../components/events/EventList";
-import ResultsTitle from "../../components/events/ResultsTitle";
-import Button from "../../components/ui/button";
 import ErrorAlert from "../../components/ui/ErrorAlert";
+import Button from "../../components/ui/button";
+import ResultsTitle from "../../components/events/ResultsTitle";
+import EventList from "../../components/events/EventList";
 
-function FilteredEventsPage() {
-    const router = useRouter();
+import { getFilteredEvents } from "../../utils/api-utils";
 
-    const filterData = router.query.slug;
-
-    if (!filterData) {
-        return (
-            <ErrorAlert>
-                <p>Loading...</p>
-            </ErrorAlert>
-        );
-    }
-
-    const yearNum = +filterData[0];
-    const monthNum = +filterData[1];
-
-    if (
-        (isNaN(yearNum) || isNaN(monthNum) || yearNum < 2021 || monthNum < 1 || monthNum > 12) &&
-        filterData.length > 1
-    ) {
+function FilteredEventsPage({ filteredEvents, dateNum, hasError }) {
+    if (hasError) {
         return (
             <Fragment>
                 <ErrorAlert>
@@ -39,12 +21,15 @@ function FilteredEventsPage() {
         );
     }
 
-    const filteredEvents = getFilteredEvents({
-        year: yearNum,
-        month: monthNum,
-    });
+    if (!filteredEvents) {
+        return (
+            <ErrorAlert>
+                <p>Loading...</p>
+            </ErrorAlert>
+        );
+    }
 
-    if ((!filteredEvents || filteredEvents.length === 0) && filterData.length > 1) {
+    if (filteredEvents.length === 0) {
         return (
             <Fragment>
                 <ErrorAlert>
@@ -57,49 +42,32 @@ function FilteredEventsPage() {
         );
     }
 
-    const date = new Date(yearNum, monthNum - 1);
+    const eventDate = new Date(dateNum.year, dateNum.month);
 
     return (
         <Fragment>
-            <ResultsTitle date={date} />
+            <ResultsTitle date={eventDate} />
             <EventList items={filteredEvents} />
         </Fragment>
     );
 }
 
-export async function getServerSideProps() {
-    const getData = await fetch("https://nextjs-course-3ef74-default-rtdb.firebaseio.com/events.json")
-        .then((response) => response.json())
-        .then((result) => {
-            const tranferedData = [];
+export async function getServerSideProps(context) {
+    const { params } = context;
 
-            for (const keys in result) {
-                tranferedData.push({
-                    id: keys,
-                    date: result[keys].date,
-                    descrption: result[keys].description,
-                    image: result[keys].image,
-                    isFeatured: result[keys].isFeatured,
-                    location: result[keys].location,
-                    title: result[keys].title,
-                });
-            }
+    const yearNum = +params.slug[0];
+    const monthNum = +params.slug[1];
 
-            return tranferedData;
-        });
+    const filteredData = await getFilteredEvents({ year: yearNum, month: monthNum });
 
-    const getFilteredEvents = (year, month) => {
-        const filteredData = getData.filter((event) => {
-            const date = new Date(event.date);
-
-            return date.getFullYear() === year && date.getMonth() === month - 1;
-        });
-
-        return filteredData;
-    };
+    if (isNaN(yearNum) || isNaN(monthNum) || yearNum < 2021 || monthNum < 1 || monthNum > 12) {
+        return {
+            props: { hasError: true },
+        };
+    }
 
     return {
-        props: {},
+        props: { filteredEvents: filteredData, dateNum: { year: yearNum, month: monthNum - 1 } },
     };
 }
 

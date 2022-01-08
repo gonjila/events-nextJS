@@ -1,16 +1,26 @@
 import { Fragment } from "react";
+import Head from "next/head";
 
 import ErrorAlert from "../../components/ui/ErrorAlert";
-import Button from "../../components/ui/button";
+import Button from "../../components/ui/ButtonComponent";
 import ResultsTitle from "../../components/events/ResultsTitle";
 import EventList from "../../components/events/EventList";
 
 import { getFilteredEvents } from "../../utils/api-utils";
 
 function FilteredEventsPage({ filteredEvents, dateNum, hasError }) {
+    const pageHeadData = (
+        <Head>
+            <title>Filtered Events</title>
+            <meta name="description" content={`All events for ${dateNum.month}/${dateNum.year}`} />
+        </Head>
+    );
+
     if (hasError) {
         return (
             <Fragment>
+                {pageHeadData}
+
                 <ErrorAlert>
                     <p>Invalid filter. Please adjust your values!</p>
                 </ErrorAlert>
@@ -24,6 +34,8 @@ function FilteredEventsPage({ filteredEvents, dateNum, hasError }) {
     if (!filteredEvents) {
         return (
             <ErrorAlert>
+                {pageHeadData}
+
                 <p>Loading...</p>
             </ErrorAlert>
         );
@@ -32,6 +44,8 @@ function FilteredEventsPage({ filteredEvents, dateNum, hasError }) {
     if (filteredEvents.length === 0) {
         return (
             <Fragment>
+                {pageHeadData}
+
                 <ErrorAlert>
                     <p>No events found for the chosen filter!</p>
                 </ErrorAlert>
@@ -42,10 +56,12 @@ function FilteredEventsPage({ filteredEvents, dateNum, hasError }) {
         );
     }
 
-    const eventDate = new Date(dateNum.year, dateNum.month);
+    const eventDate = new Date(dateNum.year, dateNum.month - 1);
 
     return (
         <Fragment>
+            {pageHeadData}
+
             <ResultsTitle date={eventDate} />
             <EventList items={filteredEvents} />
         </Fragment>
@@ -67,7 +83,7 @@ export async function getServerSideProps(context) {
     }
 
     return {
-        props: { filteredEvents: filteredData, dateNum: { year: yearNum, month: monthNum - 1 } },
+        props: { filteredEvents: filteredData, dateNum: { year: yearNum, month: monthNum } },
     };
 }
 

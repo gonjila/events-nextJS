@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import styles from "./Button.module.css";
+import styles from "./ButtonComponent.module.css";
 
 function Button({ link, children, onClick }) {
     if (link) {

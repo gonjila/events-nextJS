@@ -1,5 +1,5 @@
 import styles from "./EventsSearch.module.css";
-import Button from "../ui/Button";
+import Button from "../ui/ButtonComponent";
 import { useRef } from "react";
 
 function EventsSearch({ onSearch }) {

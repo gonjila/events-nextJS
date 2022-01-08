@@ -16,7 +16,7 @@ function EventItem({ title, image, date, location, id }) {
 
     return (
         <li className={styles.item}>
-            <Image src={"/" + image} alt={title} width={200} height={200} />
+            <Image src={"/" + image} alt={title} width={340} height={160} />
             <div className={styles.content}>
                 <div className={styles.sumarry}>
                     <h2>{title}</h2>

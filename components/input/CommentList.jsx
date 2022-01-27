@@ -1,23 +1,11 @@
-import { useEffect, useState } from "react";
-
 import classes from "./CommentList.module.css";
 
-function CommentList({ eventId }) {
-    const [commentsArray, setCommentsArray] = useState([]);
-    console.log("commentsArray", commentsArray);
-
-    useEffect(() => {
-        fetch(`/api/${eventId}`)
-            .then((res) => res.json())
-            .then((result) => setCommentsArray(result));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
+function CommentList({ commentsArray }) {
     return (
         <ul className={classes.comments}>
-            {commentsArray.comments &&
-                commentsArray.comments.map((comment) => (
-                    <li key={comment.id}>
+            {commentsArray &&
+                commentsArray.map((comment) => (
+                    <li key={comment._id}>
                         <p>{comment.text}</p>
                         <div>
                             By <address>{comment.name}</address>

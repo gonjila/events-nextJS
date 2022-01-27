@@ -1,43 +1,42 @@
-import path from "path";
-import fs from "fs";
+const { MongoClient } = require("mongodb");
 
-const buildDataFilePath = path.join(process.cwd(), "data", "comments.json");
+async function comments(req, res) {
+    const eventId = req.query.comments;
 
-export const getCommentsData = () => {
-    const filePath = buildDataFilePath;
-    const jsonFileData = fs.readFileSync(filePath);
-    const commentsData = JSON.parse(jsonFileData);
+    const client = await MongoClient.connect(
+        "mongodb+srv://gonjila:ftgo3hvaE1Irkpaq@cluster0.lb3xm.mongodb.net/eventsComments?retryWrites=true&w=majority"
+    );
 
-    return commentsData;
-};
-
-function comments(req, res) {
     if (req.method === "POST") {
         const commentBody = JSON.parse(req.body);
-        const eventComment = {
-            id: Math.random(),
-            event: req.query.comments,
-            email: commentBody.email,
-            name: commentBody.name,
-            text: commentBody.text,
+        const { email, name, text } = commentBody;
+
+        if (!email.includes("@") || !name || name.trim() === "" || !text || text.trim() === "") {
+            res.status(422).json({ message: "Invalid input!" });
+            return;
+        }
+
+        const newComment = {
+            eventId,
+            email,
+            name,
+            text,
         };
 
-        const getDataFilePath = buildDataFilePath;
-        const commentsData = getCommentsData();
+        const db = client.db();
+        const insertResult = await db.collection("comments").insertOne(newComment);
 
-        commentsData.push(eventComment);
+        client.close();
 
-        fs.writeFileSync(getDataFilePath, JSON.stringify(commentsData));
+        newComment.id = insertResult.insertedId;
 
-        res.status(201).json({ message: "Event comments.", comment: eventComment });
-    } else {
-        const commentsData = getCommentsData();
-        console.log(req.query.comments);
-        console.log(commentsData);
+        res.status(201).json({ message: "Added comment.", comment: newComment });
+    }
+    if (req.method === "GET") {
+        const db = client.db();
+        const documents = await db.collection("comments").find({ eventId }).sort({ _id: -1 }).toArray();
 
-        const filteredComments = commentsData.filter((comment) => comment.event === req.query.comments);
-
-        res.status(200).json({ message: "succes", comments: filteredComments });
+        res.status(200).json({ message: "succes", comments: documents });
     }
 }
 

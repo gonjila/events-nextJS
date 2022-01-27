@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import CommentList from "./CommentList";
 import NewComment from "./NewComment";
@@ -8,6 +8,17 @@ function Comments(props) {
     const { eventId } = props;
 
     const [showComments, setShowComments] = useState(false);
+    const [comments, setComments] = useState();
+
+    useEffect(() => {
+        fetch(`/api/${eventId}`)
+            .then((res) => res.json())
+            .then((result) => {
+                setComments(result.comments);
+            });
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showComments]);
 
     function toggleCommentsHandler() {
         setShowComments((prevStatus) => !prevStatus);
@@ -26,7 +37,7 @@ function Comments(props) {
         <section className={classes.comments}>
             <button onClick={toggleCommentsHandler}>{showComments ? "Hide" : "Show"} Comments</button>
             {showComments && <NewComment onAddComment={addCommentHandler} />}
-            {showComments && <CommentList eventId={eventId} />}
+            {showComments && <CommentList commentsArray={comments} />}
         </section>
     );
 }

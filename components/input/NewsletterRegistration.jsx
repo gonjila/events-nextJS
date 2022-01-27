@@ -6,11 +6,11 @@ function NewsletterRegistration() {
 
     function registrationHandler(event) {
         event.preventDefault();
-        const userEmail = emailRef.current.value;
+        const enteredEmail = emailRef.current.value;
 
         fetch(`/api/userEmail`, {
             method: "POST",
-            body: JSON.stringify(userEmail),
+            body: JSON.stringify(enteredEmail),
         })
             .then((res) => res.json())
             .then((result) => console.log("result", result));

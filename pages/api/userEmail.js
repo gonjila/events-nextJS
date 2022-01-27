@@ -1,4 +1,4 @@
-const { MongoClient } = require("mongodb");
+const { connectDatabase, insertDocument } = require("../../utils/db-utill");
 
 async function userEmail(req, res) {
     if (req.method === "POST") {
@@ -9,14 +9,22 @@ async function userEmail(req, res) {
             return;
         }
 
-        const client = await MongoClient.connect(
-            "mongodb+srv://gonjila:ftgo3hvaE1Irkpaq@cluster0.lb3xm.mongodb.net/usersEmails?retryWrites=true&w=majority"
-        );
-        const db = client.db();
+        let client;
 
-        await db.collection("emails").insertOne({ email: mail });
+        try {
+            client = await connectDatabase("usersEmails");
+        } catch (err) {
+            res.status(500).json({ message: "Connecting to the database failed!" });
+            return;
+        }
 
-        client.close();
+        try {
+            await insertDocument(client, "emails", { email: mail });
+            client.close();
+        } catch (err) {
+            res.status(500).json({ message: "Inserting data failed!" });
+            return;
+        }
 
         res.status(201).json({ message: "Signed up!" });
     }

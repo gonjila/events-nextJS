@@ -28,9 +28,7 @@ function Comments(props) {
         fetch(`/api/${eventId}`, {
             method: `POST`,
             body: JSON.stringify(commentData),
-        })
-            .then((res) => res.json())
-            .then((result) => console.log(result));
+        }).then((res) => res.json());
     }
 
     return (

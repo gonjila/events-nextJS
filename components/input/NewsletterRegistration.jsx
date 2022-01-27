@@ -11,9 +11,7 @@ function NewsletterRegistration() {
         fetch(`/api/userEmail`, {
             method: "POST",
             body: JSON.stringify(enteredEmail),
-        })
-            .then((res) => res.json())
-            .then((result) => console.log("result", result));
+        }).then((res) => res.json());
     }
 
     return (

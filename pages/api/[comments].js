@@ -1,11 +1,15 @@
-const { MongoClient } = require("mongodb");
+const { connectDatabase, insertDocument, getFilteredComments } = require("../../utils/db-utill");
 
 async function comments(req, res) {
     const eventId = req.query.comments;
 
-    const client = await MongoClient.connect(
-        "mongodb+srv://gonjila:ftgo3hvaE1Irkpaq@cluster0.lb3xm.mongodb.net/eventsComments?retryWrites=true&w=majority"
-    );
+    let client;
+    try {
+        client = await connectDatabase("eventsComments");
+    } catch (err) {
+        res.status(500), json({ message: "Connecting to the database failed!" });
+        return;
+    }
 
     if (req.method === "POST") {
         const commentBody = JSON.parse(req.body);
@@ -13,6 +17,7 @@ async function comments(req, res) {
 
         if (!email.includes("@") || !name || name.trim() === "" || !text || text.trim() === "") {
             res.status(422).json({ message: "Invalid input!" });
+            client.close();
             return;
         }
 
@@ -23,20 +28,29 @@ async function comments(req, res) {
             text,
         };
 
-        const db = client.db();
-        const insertResult = await db.collection("comments").insertOne(newComment);
+        let insertResult;
+        try {
+            insertResult = await insertDocument(client, "comments", newComment);
+            client.close();
+        } catch (err) {
+            res.status(500).json({ message: "Inserting comment failed!" });
+            return;
+        }
 
-        client.close();
-
-        newComment.id = insertResult.insertedId;
+        newComment._id = insertResult.insertedId;
 
         res.status(201).json({ message: "Added comment.", comment: newComment });
     }
-    if (req.method === "GET") {
-        const db = client.db();
-        const documents = await db.collection("comments").find({ eventId }).sort({ _id: -1 }).toArray();
 
-        res.status(200).json({ message: "succes", comments: documents });
+    if (req.method === "GET") {
+        try {
+            const documents = await getFilteredComments(client, "comments", { eventId }, { _id: -1 });
+            res.status(200).json({ message: "succes", comments: documents });
+        } catch (err) {
+            res.status(500).json({ message: "Getting comments failed!" });
+        }
+
+        client.close();
     }
 }
 

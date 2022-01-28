@@ -1,17 +1,52 @@
-import { useRef } from "react";
+import { useRef, useContext } from "react";
+
 import classes from "./NewsletterRegistration.module.css";
+
+import { NotificationContext } from "../../store/notificationContext";
 
 function NewsletterRegistration() {
     const emailRef = useRef(null);
+    const { showNotification, notification } = useContext(NotificationContext);
 
     function registrationHandler(event) {
         event.preventDefault();
         const enteredEmail = emailRef.current.value;
 
+        showNotification({
+            title: "Signing up...",
+            message: "Registering for newsletter.",
+            status: "pending",
+        });
+
         fetch(`/api/userEmail`, {
             method: "POST",
             body: JSON.stringify(enteredEmail),
-        }).then((res) => res.json());
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+
+                return response.json().then((data) => {
+                    throw new Error(data.message || "Something went wrong!");
+                });
+            })
+            .then((data) => {
+                showNotification({
+                    title: "Success!",
+                    message: "Successfully registered for newsletter.",
+                    status: "success",
+                });
+            })
+            .catch((err) => {
+                showNotification({
+                    title: "Error!",
+                    message: err.message || "Something went wrong.",
+                    status: "success",
+                });
+            });
+
+        console.log(notification);
     }
 
     return (
@@ -26,7 +61,6 @@ function NewsletterRegistration() {
                         aria-label="Your email"
                         ref={emailRef}
                     />
-                    <></>
                     <button>Register</button>
                 </div>
             </form>

@@ -31,7 +31,7 @@ function NewsletterRegistration() {
                     throw new Error(data.message || "Something went wrong!");
                 });
             })
-            .then((data) => {
+            .then(() => {
                 showNotification({
                     title: "Success!",
                     message: "Successfully registered for newsletter.",

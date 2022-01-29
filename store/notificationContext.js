@@ -16,7 +16,7 @@ function NotificationContextProvider({ children }) {
         ) {
             const timer = setTimeout(() => {
                 setActiveNotification(null);
-            }, 5000);
+            }, 2000);
 
             return () => {
                 clearTimeout(timer);

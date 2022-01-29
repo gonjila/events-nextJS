@@ -42,11 +42,9 @@ function NewsletterRegistration() {
                 showNotification({
                     title: "Error!",
                     message: err.message || "Something went wrong.",
-                    status: "success",
+                    status: "error",
                 });
             });
-
-        console.log(notification);
     }
 
     return (

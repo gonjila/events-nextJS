@@ -1,9 +1,9 @@
 const { MongoClient } = require("mongodb");
 
 export const connectDatabase = async (projectName) => {
-    const client = await MongoClient.connect(
-        `mongodb+srv://gonjila:ftgo3hvaE1Irkpaq@cluster0.lb3xm.mongodb.net/${projectName}?retryWrites=true&w=majority`
-    );
+    const connectionLink = `mongodb+srv://${process.env.mongodb_username}:${process.env.mongodb_password}@${process.env.mongodb_clastername}.lb3xm.mongodb.net/${projectName}?retryWrites=true&w=majority`;
+
+    const client = await MongoClient.connect(connectionLink);
     return client;
 };
 
